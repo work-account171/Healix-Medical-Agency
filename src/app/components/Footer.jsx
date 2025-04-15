@@ -48,7 +48,7 @@ export default function Footer(){
 
            <div className='mt-10 border-t-2'>
               <div className="copyRightDiv mt-5 flex flex-wrap justify-between">
-                <h2 className='copyRightTxt flex justify-center text-sm items-center gap-1'>CopyRight <FaRegCopyright className="cIcon" /> 2025 All rights reserved | This project is made under Kavelogics Technologies</h2>
+                <h2 className='copyRightTxt flex justify-center text-sm items-center gap-1'>CopyRight <FaRegCopyright className="cIcon" /> 2025 All rights reserved</h2>
                 <Link href={"https://github.com/kavelogics-tech"} target="_blank"><FaGithub className="text-xl bg-white hover:text-blue-400 rounded-full"/></Link>
               </div>
            </div>
