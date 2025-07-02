@@ -1,0 +1,35 @@
+import mongoose from 'mongoose';
+
+const doctorSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  specialization: {
+    type: String,
+    required: true
+  },
+  location: {
+    type: String,
+    required: true
+  },
+  consultationFee: {
+    type: Number,
+    required: true,
+    default: 100
+  },
+  availableSlots: [{
+    date: Date,
+    times: [String]
+  }],
+  appointments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Appointment'
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+export default mongoose.models.Doctor || mongoose.model('Doctor', doctorSchema);

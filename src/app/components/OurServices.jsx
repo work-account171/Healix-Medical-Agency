@@ -7,7 +7,7 @@ import { BsVirus } from "react-icons/bs";
 
 export default function OurServices(){
     return(
-        <div className="serviceParentDiv mt-36">
+        <div className="serviceParentDiv mt-28">
 
             <div>
               <h1 className="servicesSmallHeading text-[#EC7FA9] text-center mb-1 text-lg">QuickHealth</h1>
