@@ -39,7 +39,7 @@ export default function BookAppointment() {
     times: false,
     submitting: false
   });
-  
+  ``
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -53,7 +53,6 @@ export default function BookAppointment() {
 
         setDoctors(data);
 
-        // Extract unique specializations
         const specs = [...new Set(data.map(doc => doc.specialization))];
         setSpecializations(specs);
 
