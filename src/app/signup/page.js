@@ -168,7 +168,7 @@ export default function SignupPage() {
               </>
             )}
 
-            {/* Doctor Fields */}
+     
             {form.role === "doctor" && (
               <>
                 <input
