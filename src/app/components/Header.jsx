@@ -75,7 +75,7 @@ export default function Header() {
                     Contact Us
                 </h1>
                 <button className="bg-[#EC7FA9] text-white hover:bg-[#BE5985] hover:text-white px-4 py-1.5 rounded-md font-bold">
-                    Login
+                    Login/SignUp
                 </button>
             </div>
 
