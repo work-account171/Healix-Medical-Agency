@@ -13,7 +13,7 @@ export default function ConfirmationStep({
   success
 }) {
   const router = useRouter();
-  const selectedDoctor = doctors.find(d => d._id === formData.doctorId);
+  const selectedDoctor = doctors?.find(d => d._id === formData.doctorId);
   
   // Redirect on success
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function ConfirmationStep({
 
   return (
     <div className="space-y-4 p-6">
-      <h2 className="text-3xl font-bold text-gray-800 mb-10">Confirm Your Appointment</h2>
+      <h2 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-10">Confirm Your Appointment</h2>
       
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-800 rounded-lg">
@@ -55,12 +55,19 @@ export default function ConfirmationStep({
           </div>
           <div>
             <p className="text-gray-600">Doctor:</p>
-            <p className="font-medium">{selectedDoctor?.name} ({selectedDoctor?.specialization})</p>
+            <p className="font-medium">
+              {selectedDoctor?.name} ({selectedDoctor?.specialization?.name || formData.specializationName})
+            </p>
           </div>
           <div>
             <p className="text-gray-600">Date & Time:</p>
             <p className="font-medium">
-              {new Date(formData.date).toLocaleDateString()} at {formData.time}
+              {new Date(formData.date).toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })} at {formData.time}
             </p>
           </div>
           <div>
@@ -69,7 +76,7 @@ export default function ConfirmationStep({
           </div>
           <div>
             <p className="text-gray-600">Consultation Fee:</p>
-            <p className="font-medium">${selectedDoctor?.consultationFee}</p>
+            <p className="font-medium">${selectedDoctor?.consultationFee || formData.amount}</p>
           </div>
         </div>
       </div>

@@ -5,7 +5,7 @@ export default function PatientInfoForm({ formData, handleChange, nextStep }) {
     <div className="space-y-4 p-6 ">
       <div className="mb-10">
         
-        <h1 className=" text-4xl  font-bold">
+        <h1 className="text-3xl lg:text-4xl  font-bold">
           Personal Information
         </h1>
       </div>
