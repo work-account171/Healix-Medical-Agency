@@ -135,7 +135,7 @@ const DoctorCard = ({ doctor, onImageClick }) => (
     </div>
 
     <Link
-      href="/appointments"
+      href={`/appointments?doctorId=${doctor._id}`}
       className="bg-[#EC7FA9] hover:bg-pink-500 text-white px-6 py-4 rounded-[8px] text-base font-bold"
     >
       Book Appointment
