@@ -38,15 +38,16 @@ export default function Header() {
         setIsOpen(!isOpen);
     };
 
-    return (
-        <div className="header flex justify-between px-6 sm:px-24 p-4 border-b">
-
-            <Link href="/">
-                <h1 className="logoTxt flex gap-2 items-center text-black font-bold">
-                    <span className="logoImg w-10"><Image src={logo} /></span>
-                    <span className='text-[#EC7FA9]'>Healix</span>
-                </h1>
-            </Link>
+  return (
+    <div className="header flex justify-between px-6 sm:px-24 p-4 border-b">
+      <Link href="/">
+        <h1 className="logoTxt flex gap-2 items-center text-black font-bold">
+          <span className="logoImg w-10">
+            <Image src={logo} />
+          </span>
+          <span className="text-[#EC7FA9]">Healix</span>
+        </h1>
+      </Link>
 
             {/* Hamburger Menu for Small and Medium Screens (Visible only below 1100px) */}
             <div className="lg:hidden flex items-center" onClick={toggleMenu}>

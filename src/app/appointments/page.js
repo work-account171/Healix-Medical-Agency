@@ -1,7 +1,9 @@
+
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '../components/Header';
 import ConfirmationStep from '../components/Appointments/ConfirmationStep';
 import AppointmentDetailsForm from '../components/Appointments/AppointmentDetailsForm';
@@ -12,8 +14,9 @@ import Footer from '../components/Footer';
 import OurServices from '../components/OurServices';
 import DoctorCard from '../components/DoctorCard';
 
-export default function BookAppointment() {
+function BookAppointmentContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     doctorId: '',
@@ -38,7 +41,8 @@ export default function BookAppointment() {
     specializations: true,
     dates: false,
     times: false,
-    submitting: false
+    submitting: false,
+    initialLoad: true
   });
 
   const [error, setError] = useState('');
@@ -52,28 +56,51 @@ export default function BookAppointment() {
         const specsRes = await fetch('/api/doctors/fetch-specializations');
         if (!specsRes.ok) throw new Error('Failed to load specializations');
         const specsData = await specsRes.json();
-        setSpecializations(specsData.specializations || specsData.data || []);
+        const specs = specsData.specializations || specsData.data || [];
+        setSpecializations(specs);
 
         // Fetch doctors
         const docsRes = await fetch('/api/doctors/fetch-doctors');
         if (!docsRes.ok) throw new Error('Failed to load doctors');
         const docsData = await docsRes.json();
-        setDoctors(docsData.doctors || docsData.data || []);
+        const docs = docsData.doctors || docsData.data || [];
+        setDoctors(docs);
+
+        // Check for doctorId in URL params
+        const doctorIdFromParams = searchParams.get('doctorId');
+        if (doctorIdFromParams) {
+          const selectedDoctor = docs.find(d => d._id === doctorIdFromParams);
+          if (selectedDoctor) {
+            setFormData(prev => ({
+              ...prev,
+              doctorId: selectedDoctor._id,
+              specialization: selectedDoctor.specialization._id,
+              specializationName: selectedDoctor.specialization.name,
+              amount: selectedDoctor.consultationFee
+            }));
+            // Start from appointment details step if doctor is pre-selected
+            setCurrentStep(0);
+          }
+        }
 
       } catch (err) {
         console.error("Fetch error:", err);
         setError(err.message);
       } finally {
-        setLoading(prev => ({ ...prev, doctors: false, specializations: false }));
+        setLoading(prev => ({ ...prev, 
+          doctors: false, 
+          specializations: false,
+          initialLoad: false
+        }));
       }
     };
 
     fetchData();
-  }, []);
+  }, [searchParams]);
 
-  // When specialization changes, reset doctor selection
+  // When specialization changes, reset doctor selection if not pre-selected
   useEffect(() => {
-    if (formData.specialization) {
+    if (formData.specialization && !searchParams.get('doctorId')) {
       const selectedSpec = specializations.find(s => s._id === formData.specialization);
       setFormData(prev => ({ 
         ...prev, 
@@ -83,7 +110,7 @@ export default function BookAppointment() {
         specializationName: selectedSpec?.name || ''
       }));
     }
-  }, [formData.specialization, specializations]);
+  }, [formData.specialization, specializations, searchParams]);
 
   // When doctor changes, get available dates and set amount
   useEffect(() => {
@@ -187,30 +214,29 @@ export default function BookAppointment() {
       });
 
       if (!res.ok) {
-      const errorData = await res.json();
-      
-      // Handle 409 Conflict specifically
-      if (res.status === 409) {
-        const existingDate = errorData.existingAppointment?.date 
-          ? new Date(errorData.existingAppointment.date).toLocaleDateString() 
-          : 'previously';
-        const existingTime = errorData.existingAppointment?.time || '';
+        const errorData = await res.json();
         
-        setError(`You already have an appointment with this doctor on ${existingDate} at ${existingTime}.`);
-      } else {
-        throw new Error(errorData.message || 'Booking failed');
+        if (res.status === 409) {
+          const existingDate = errorData.existingAppointment?.date 
+            ? new Date(errorData.existingAppointment.date).toLocaleDateString() 
+            : 'previously';
+          const existingTime = errorData.existingAppointment?.time || '';
+          
+          setError(`You already have an appointment with this doctor on ${existingDate} at ${existingTime}.`);
+        } else {
+          throw new Error(errorData.message || 'Booking failed');
+        }
+        return;
       }
-      return;
-    }
 
-    setSuccess(true);
-    setTimeout(() => router.push('/appointments'), 1500);
-  } catch (err) {
-    setError(err.message || 'An error occurred while booking your appointment');
-  } finally {
-    setLoading(prev => ({ ...prev, submitting: false }));
-  }
-};
+      setSuccess(true);
+      setTimeout(() => router.push('/appointments'), 1500);
+    } catch (err) {
+      setError(err.message || 'An error occurred while booking your appointment');
+    } finally {
+      setLoading(prev => ({ ...prev, submitting: false }));
+    }
+  };
   
   // Filter doctors by specialization
   const filteredDoctors = formData.specialization
@@ -256,6 +282,7 @@ export default function BookAppointment() {
               loading={loading}
               prevStep={prevStep}
               nextStep={nextStep}
+              hasPreselectedDoctor={!!searchParams.get('doctorId')}
             />
           )}
           
@@ -273,12 +300,33 @@ export default function BookAppointment() {
         </div>
       </div>
       
-      <div className="docCardsParent px-4 md:px-24 mt-10">
-        <DoctorCard/>
-      </div>
+      {!searchParams.get('doctorId') && (
+        <div className="docCardsParent px-4 md:px-24 mt-10">
+          <DoctorCard/>
+        </div>
+      )}
       
       <OurServices/>
       <Footer />
     </>
+  );
+}
+
+export default function BookAppointment() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto"></div>
+            <p className="mt-4 text-lg font-medium text-gray-700">Loading appointment details...</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <BookAppointmentContent />
+    </Suspense>
   );
 }
