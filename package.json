@@ -11,6 +11,8 @@
   "dependencies": {
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cookie": "^1.0.2",
+    "jose": "^6.0.11",
     "lucide-react": "^0.460.0",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.1",
