@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Specialization from "@/doctor-models/specialization";
+import Specialization from "@/models/Specialization";
 import dbConnect from "@/lib/dbConnect";
 
 export async function POST(req) {

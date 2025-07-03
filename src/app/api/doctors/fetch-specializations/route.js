@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
-import Specialization from "@/doctor-models/specialization";
+import Specialization from "@/models/Specialization";
 
 export async function GET() {
   try {

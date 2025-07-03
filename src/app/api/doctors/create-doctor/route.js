@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import Doctor from "@/doctor-models/doctor";
+import Doctor from "@/models/Doctor";
 import dbConnect from "@/lib/dbConnect";
 
 export async function POST(req) {
@@ -17,9 +17,15 @@ export async function POST(req) {
       availableTime: body.availableTime || {},
     });
 
-    return NextResponse.json({ success: true, doctor: newDoctor }, { status: 201 });
+    return NextResponse.json(
+      { success: true, doctor: newDoctor },
+      { status: 201 }
+    );
   } catch (error) {
     console.error(error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: error.message },
+      { status: 500 }
+    );
   }
 }
