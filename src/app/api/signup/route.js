@@ -1,121 +1,105 @@
 import dbConnect from "@/lib/dbConnect";
-import Patient from "@/models/Patient";
+import User from "@/models/User";
 import Doctor from "@/models/Doctor";
+import Patient from "@/models/Patient";
 
 export async function POST(req) {
-  await dbConnect();
-
-  const body = await req.json();
-  const {
-    name,
-    email,
-    password,
-    role,
-    age,
-    gender,
-    bloodGroup,
-    specialization,
-    licenseNumber,
-    experienceYears,
-  } = body;
-
   try {
-    if (role === "patient") {
-      const existing = await Patient.findOne({ email });
-      if (existing)
-        return new Response(
-          JSON.stringify({ error: "Patient already exists" }),
-          { status: 400 }
-        );
-
-      const patient = await Patient.create({
-        name,
-        email,
-        password,
-        age,
-        gender,
-        bloodGroup,
+    const body = await req.json();
+    const {
+      name,
+      email,
+      password,
+      role,
+      phone,
+      location,
+      specialization,
+      experienceYears,
+      consultationFee,
+    } = body;
+    if (!name || !email || !password || !role) {
+      return new Response(
+        JSON.stringify({ error: "All fields are required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+    if (!["doctor", "patient"].includes(role)) {
+      return new Response(JSON.stringify({ error: "Invalid role" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
       });
-      return new Response(JSON.stringify({ success: true, user: patient }), {
-        status: 201,
+    }
+    await dbConnect();
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return new Response(JSON.stringify({ error: "User already exists" }), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    if (role === "doctor") {
-      const existing = await Doctor.findOne({ email });
-      if (existing)
-        return new Response(
-          JSON.stringify({ error: "Doctor already exists" }),
-          { status: 400 }
-        );
-
-      const doctor = await Doctor.create({
-        name,
-        email,
-        password,
-        specialization,
-        licenseNumber,
-        experienceYears,
-      });
-      return new Response(JSON.stringify({ success: true, user: doctor }), {
-        status: 201,
-      });
-    }
-
-    return new Response(JSON.stringify({ error: "Invalid role" }), {
-      status: 400,
+    // Create User
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      role,
     });
-  } catch (err) {
+    if (role === "doctor") {
+      if (!specialization || !experienceYears || !location) {
+        return new Response(
+          JSON.stringify({ error: "Doctor-specific fields are required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+      await Doctor.create({
+        user_id: newUser._id,
+        name,
+        specialization,
+        experienceYears,
+        consultationFee: consultationFee || 100,
+        location,
+        profileImage: "",
+        verified: false,
+        appointments: [],
+      });
+    } else if (role === "patient") {
+      if (!phone || !location) {
+        return new Response(
+          JSON.stringify({ error: "Patient-specific fields are required" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+      await Patient.create({
+        user_id: newUser._id,
+        name,
+        email,
+        phone,
+        location,
+        appointments: [],
+      });
+    }
     return new Response(
-      JSON.stringify({ error: "Something went wrong", details: err.message }),
-      { status: 500 }
+      JSON.stringify({ message: "User registered successfully" }),
+      {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }
     );
+  } catch (err) {
+    console.error("Signup error:", err);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
-
-// import dbConnect from '@/lib/dbConnect';
-// import User from '@/models/User';
-
-// export async function POST(req) {
-//   try {
-//     const body = await req.json();
-//     const { name, email, password, role } = body;
-
-//     if (!name || !email || !password || !role) {
-//       return new Response(
-//         JSON.stringify({ error: 'All fields are required' }),
-//         { status: 400, headers: { 'Content-Type': 'application/json' } }
-//       );
-//     }
-
-//     if (!['doctor', 'patient'].includes(role)) {
-//       return new Response(
-//         JSON.stringify({ error: 'Invalid role' }),
-//         { status: 400, headers: { 'Content-Type': 'application/json' } }
-//       );
-//     }
-
-//     await dbConnect();
-
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       return new Response(
-//         JSON.stringify({ error: 'User already exists' }),
-//         { status: 409, headers: { 'Content-Type': 'application/json' } }
-//       );
-//     }
-
-//     const newUser = await User.create({ name, email, password, role });
-
-//     return new Response(
-//       JSON.stringify({ message: 'User created', user: newUser }),
-//       { status: 201, headers: { 'Content-Type': 'application/json' } }
-//     );
-//   } catch (err) {
-//     console.error(err);
-//     return new Response(
-//       JSON.stringify({ error: 'Internal Server Error' }),
-//       { status: 500, headers: { 'Content-Type': 'application/json' } }
-//     );
-//   }
-// }

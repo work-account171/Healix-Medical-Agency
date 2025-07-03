@@ -1,16 +1,42 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import logo from '../images/logo.png';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false);
+    const [user, setUser] = useState(null);
+    const router = useRouter();
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+    const handleLogout = async () => {
+        await fetch("/api/logout");
+        router.push("/login");
+    };
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const userRes = await fetch("/api/me");
+                const data = await userRes.json();
+                setUser(data.user || null); // Assuming { user: {...} } is returned
+            } catch (err) {
+                console.error("Failed to fetch user:", err);
+                setUser(null);
+            }
+        };
+
+        fetchUser();
+    }, []);
+
+
+    const toggleMenu = () => {
+        setIsOpen(!isOpen);
+    };
 
     return (
         <div className="header flex justify-between px-6 sm:px-24 p-4 border-b">
@@ -22,42 +48,42 @@ export default function Header() {
                 </h1>
             </Link>
 
-      {/* Hamburger Menu for Small and Medium Screens (Visible only below 1100px) */}
-      <div className="lg:hidden flex items-center" onClick={toggleMenu}>
-        {isOpen ? (
-          // Cross icon when the menu is open
-          <svg
-            className="w-6 h-6 text-gray-700 cursor-pointer"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        ) : (
-          // Hamburger icon when the menu is closed
-          <svg
-            className="w-6 h-6 text-gray-700 cursor-pointer"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        )}
-      </div>
+            {/* Hamburger Menu for Small and Medium Screens (Visible only below 1100px) */}
+            <div className="lg:hidden flex items-center" onClick={toggleMenu}>
+                {isOpen ? (
+                    // Cross icon when the menu is open
+                    <svg
+                        className="w-6 h-6 text-gray-700 cursor-pointer"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                        />
+                    </svg>
+                ) : (
+                    // Hamburger icon when the menu is closed
+                    <svg
+                        className="w-6 h-6 text-gray-700 cursor-pointer"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 6h16M4 12h16M4 18h16"
+                        />
+                    </svg>
+                )}
+            </div>
 
             {/* Desktop Navbar Links (Visible on Screens Larger than 1100px) */}
             <div className="hidden lg:flex justify-center items-center gap-10">
@@ -84,11 +110,16 @@ export default function Header() {
                         Contact Us
                     </h1>
                 </Link>
-                <Link href="/login">
-                    <button className="bg-[#EC7FA9] text-white hover:bg-[#BE5985] hover:text-white px-4 py-1.5 rounded-md font-bold">
-                        Login/SignUp
-                    </button>
-                </Link>
+                {
+                    user ? <button onClick={handleLogout} className="bg-[#EC7FA9] text-white hover:bg-[#BE5985] hover:text-white px-4 py-1.5 rounded-md font-bold">
+                        Logout
+                    </button> :
+                        <Link href="/login">
+                            <button className="bg-[#EC7FA9] text-white hover:bg-[#BE5985] hover:text-white px-4 py-1.5 rounded-md font-bold">
+                                Login
+                            </button>
+                        </Link>
+                }
             </div>
 
             {/* Mobile Dropdown Menu (Visible on Smaller Screens) */}
@@ -117,11 +148,16 @@ export default function Header() {
                             Contact Us
                         </h1>
                     </Link>
-                    <Link href="/login">
-                        <button className="bg-[#EC7FA9] text-white hover:bg-[#BE5985] hover:text-white w-32 py-3 rounded-md font-bold mt-3 mb-3">
-                            Login
-                        </button>
-                    </Link>
+                    {
+                        user ? (<button onClick={handleLogout} className="bg-[#EC7FA9] text-white hover:bg-[#BE5985] hover:text-white w-32 py-3 rounded-md font-bold mt-3 mb-3">
+                            Logout
+                        </button>) :
+                            (<Link href="/login">
+                                <button className="bg-[#EC7FA9] text-white hover:bg-[#BE5985] hover:text-white w-32 py-3 rounded-md font-bold mt-3 mb-3">
+                                    Login
+                                </button>
+                            </Link>)
+                    }
                 </div>
             )}
 
