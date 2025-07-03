@@ -3,6 +3,7 @@
 import { useState } from 'react';  
 import Image from 'next/image';
 import logo from '../images/logo.png';
+import Link from 'next/link';
 
 export default function Header() {
     const [isOpen, setIsOpen] = useState(false); 
@@ -64,9 +65,9 @@ export default function Header() {
                 <h1 className="link font-semibold text-gray-500 hover:text-gray-700 relative group">
                     Doctors
                 </h1>
-                <h1 className="link font-semibold text-gray-500 hover:text-gray-700 relative group">
+                <Link href={'/appointments'} className="link font-semibold text-gray-500 hover:text-gray-700 relative group">
                     Appointments
-                </h1>
+                </Link>
                 <h1 className="link font-semibold text-gray-500 hover:text-gray-700 relative group">
                     About Us
                 </h1>
@@ -87,9 +88,9 @@ export default function Header() {
                     <h1 className="link font-semibold text-gray-500 hover:text-gray-700 p-3 relative group">
                         Doctors
                     </h1>
-                    <h1 className="link font-semibold text-gray-500 hover:text-gray-700 p-3 relative group">
+                    <Link href={'/appointments'} className="link font-semibold text-gray-500 hover:text-gray-700 p-3 relative group">
                         Appointments
-                    </h1>
+                    </Link>
                     <h1 className="link font-semibold text-gray-500 hover:text-gray-700 p-3 relative group">
                         About Us
                     </h1>
