@@ -1,18 +1,13 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
-import Doctor from "@/doctor-models/doctor";
+import Doctor from "@/models/Doctor";
 
 export async function GET() {
   try {
     await dbConnect();
-    const doctors = await Doctor.find({})
-    .populate("specialization")
-    .lean();
+    const doctors = await Doctor.find({}).populate("specialization").lean();
 
-    return NextResponse.json(
-      { success: true, doctors },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, doctors }, { status: 200 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
