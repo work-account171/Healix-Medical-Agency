@@ -12,34 +12,35 @@ import Footer from '../components/Footer';
 import OurServices from '../components/OurServices';
 import DoctorCard from '../components/DoctorCard';
 
-
-
 export default function BookAppointment() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     doctorId: '',
     specialization: '',
+    specializationName: '',
     date: '',
     time: '',
     location: '',
     patientName: '',
     patientEmail: '',
     patientPhone: '',
-    amount: '' // Added amount field
+    amount: ''
   });
 
   const [doctors, setDoctors] = useState([]);
   const [availableDates, setAvailableDates] = useState([]);
   const [availableTimes, setAvailableTimes] = useState([]);
   const [specializations, setSpecializations] = useState([]);
+  
   const [loading, setLoading] = useState({
     doctors: true,
+    specializations: true,
     dates: false,
     times: false,
     submitting: false
   });
-  ``
+
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -47,19 +48,23 @@ export default function BookAppointment() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/test/doctors');
-        if (!res.ok) throw new Error('Failed to load doctors');
-        const data = await res.json();
+        // Fetch specializations
+        const specsRes = await fetch('/api/doctors/fetch-specializations');
+        if (!specsRes.ok) throw new Error('Failed to load specializations');
+        const specsData = await specsRes.json();
+        setSpecializations(specsData.specializations || specsData.data || []);
 
-        setDoctors(data);
-
-        const specs = [...new Set(data.map(doc => doc.specialization))];
-        setSpecializations(specs);
+        // Fetch doctors
+        const docsRes = await fetch('/api/doctors/fetch-doctors');
+        if (!docsRes.ok) throw new Error('Failed to load doctors');
+        const docsData = await docsRes.json();
+        setDoctors(docsData.doctors || docsData.data || []);
 
       } catch (err) {
+        console.error("Fetch error:", err);
         setError(err.message);
       } finally {
-        setLoading(prev => ({ ...prev, doctors: false }));
+        setLoading(prev => ({ ...prev, doctors: false, specializations: false }));
       }
     };
 
@@ -68,8 +73,17 @@ export default function BookAppointment() {
 
   // When specialization changes, reset doctor selection
   useEffect(() => {
-    setFormData(prev => ({ ...prev, doctorId: '', date: '', time: '' }));
-  }, [formData.specialization]);
+    if (formData.specialization) {
+      const selectedSpec = specializations.find(s => s._id === formData.specialization);
+      setFormData(prev => ({ 
+        ...prev, 
+        doctorId: '', 
+        date: '', 
+        time: '',
+        specializationName: selectedSpec?.name || ''
+      }));
+    }
+  }, [formData.specialization, specializations]);
 
   // When doctor changes, get available dates and set amount
   useEffect(() => {
@@ -135,10 +149,11 @@ export default function BookAppointment() {
     setFormData(prev => ({
       ...prev,
       [name]: value,
-      // Reset time when date changes
       ...(name === 'date' ? { time: '' } : {}),
-      // Reset date and time when doctor changes
-      ...(name === 'doctorId' ? { date: '', time: '' } : {})
+      ...(name === 'doctorId' ? { date: '', time: '' } : {}),
+      ...(name === 'specialization' ? { 
+        specializationName: specializations.find(s => s._id === value)?.name || ''
+      } : {})
     }));
     setError('');
   };
@@ -165,27 +180,41 @@ export default function BookAppointment() {
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          specialization: formData.specializationName 
+        })
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
+      const errorData = await res.json();
+      
+      // Handle 409 Conflict specifically
+      if (res.status === 409) {
+        const existingDate = errorData.existingAppointment?.date 
+          ? new Date(errorData.existingAppointment.date).toLocaleDateString() 
+          : 'previously';
+        const existingTime = errorData.existingAppointment?.time || '';
+        
+        setError(`You already have an appointment with this doctor on ${existingDate} at ${existingTime}.`);
+      } else {
         throw new Error(errorData.message || 'Booking failed');
       }
-
-      setSuccess(true);
-      setTimeout(() => router.push('/appointments'), 1500);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(prev => ({ ...prev, submitting: false }));
+      return;
     }
-  };
-  
+
+    setSuccess(true);
+    setTimeout(() => router.push('/appointments'), 1500);
+  } catch (err) {
+    setError(err.message || 'An error occurred while booking your appointment');
+  } finally {
+    setLoading(prev => ({ ...prev, submitting: false }));
+  }
+};
   
   // Filter doctors by specialization
   const filteredDoctors = formData.specialization
-    ? doctors.filter(doc => doc.specialization === formData.specialization)
+    ? doctors.filter(doc => doc.specialization._id === formData.specialization)
     : [];
 
   // Navigation between steps
@@ -198,25 +227,24 @@ export default function BookAppointment() {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
   };
 
-  // For mobile view, we'll show all steps in one column
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-
   return (
     <>
       <Header />
       <HeroSection />
       
-      <div className="max-w-7xl mx-auto px-4 py-8 mt-20">
+      <div className="max-w-7xl mx-auto px-4 py-8 mt-10 lg:mt-20">
         <ProgressSteps currentStep={currentStep} />
         
-        {isMobile ? (
-          <div className="space-y-6">
+        <div className="mt-8">
+          {currentStep === 0 && (
             <PatientInfoForm
               formData={formData} 
               handleChange={handleChange} 
               nextStep={nextStep}
             />
-            
+          )}
+          
+          {currentStep === 1 && (
             <AppointmentDetailsForm
               formData={formData}
               handleChange={handleChange}
@@ -229,7 +257,9 @@ export default function BookAppointment() {
               prevStep={prevStep}
               nextStep={nextStep}
             />
-            
+          )}
+          
+          {currentStep === 2 && (
             <ConfirmationStep
               formData={formData}
               doctors={doctors}
@@ -239,49 +269,14 @@ export default function BookAppointment() {
               error={error}
               success={success}
             />
-          </div>
-        ) : (
-          <>
-            {currentStep === 0 && (
-              <PatientInfoForm
-                formData={formData} 
-                handleChange={handleChange} 
-                nextStep={nextStep}
-              />
-            )}
-            
-            {currentStep === 1 && (
-              <AppointmentDetailsForm
-                formData={formData}
-                handleChange={handleChange}
-                doctors={doctors}
-                specializations={specializations}
-                filteredDoctors={filteredDoctors}
-                availableDates={availableDates}
-                availableTimes={availableTimes}
-                loading={loading}
-                prevStep={prevStep}
-                nextStep={nextStep}
-              />
-            )}
-            
-            {currentStep === 2 && (
-              <ConfirmationStep
-                formData={formData}
-                doctors={doctors}
-                prevStep={prevStep}
-                handleSubmit={handleSubmit}
-                loading={loading}
-                error={error}
-                success={success}
-              />
-            )}
-          </>
-        )}
+          )}
+        </div>
       </div>
-      <div className="docCardsParent px-24 mt-10">
-                  <DoctorCard/>
-                </div>
+      
+      <div className="docCardsParent px-4 md:px-24 mt-10">
+        <DoctorCard/>
+      </div>
+      
       <OurServices/>
       <Footer />
     </>

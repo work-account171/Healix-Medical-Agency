@@ -6,7 +6,7 @@ import heroImage from "../images/heroimage.jpg"
 export default function HeroSection(){
     return(
        <>
-           <div className="heroSection bg-gray-50 pt-28 pb-36 flex px-24 justify-between items-center">
+           <div className="heroSection bg-gray-50 pt-28 pb-36 flex px-24 justify-between items-center overflow-visible">
               
               <div className="heroDetail flex flex-col gap-9">
                  <h1 className="heroHeading flex items-center font-bold">Welcome to Healix <span className="heroHeartImage w-[5vw]"><Image className="mix-blend-multiply" src={heroImage} alt="hero Image"/></span></h1>
@@ -19,10 +19,10 @@ export default function HeroSection(){
                  </div>
               </div>
 
-              <div className="heroImgDiv">
+              <div className="heroImgDiv overflow-visible">
                  <Image    
                   className="heroImg object-cover object-center rounded-xl h-[51vh]"
-                  width={500} 
+                  width={440} 
                   src={DoctorImage}
                   alt="Doctor Image"/>
               </div>
