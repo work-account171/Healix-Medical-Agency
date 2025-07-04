@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -15,7 +15,20 @@ export default function SignupPage() {
     experienceYears: "",
     consultationFee: "",
   });
+
   const router = useRouter();
+  const [specializations, setSpecializations] = useState([]);
+
+  useEffect(() => {
+    const fetchSpecializations = async () => {
+      fetch('/api/doctors/fetch-specializations')
+        .then((res) => res.json())
+        .then((data) => setSpecializations(data.specializations));
+    }
+
+    fetchSpecializations();
+  }, [])
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -101,14 +114,16 @@ export default function SignupPage() {
           />
           {form.role === "doctor" && (
             <>
-              <input
+              <select
                 name="specialization"
-                placeholder="Specialization"
                 required
                 value={form.specialization}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded"
-              />
+              >
+                <option value="">Select a specialization</option>
+                {specializations.map((spec) => <option key={spec.name} value={spec._id}>{spec.name}</option>)}
+              </select>
               <input
                 name="experienceYears"
                 type="number"

@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { verifyJwt } from "@/lib/jwt";
-import { NextResponse } from "next/server";
 
 export async function GET() {
     const token = cookies().get("token")?.value;
