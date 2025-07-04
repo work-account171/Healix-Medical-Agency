@@ -13,6 +13,7 @@ export default function Appointments() {
       try {
         const res = await fetch("/api/appointments/fetch-appointment-by-id");
         const data = await res.json();
+        console.log("data: ", data);
         setAppointments(data.appointments || []);
       } catch (error) {
         console.error("Failed to load appointments", error);
