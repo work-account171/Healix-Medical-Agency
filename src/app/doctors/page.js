@@ -81,11 +81,10 @@ const SpecializationFilters = ({ specializations, selected, onSelect }) => (
     {specializations.map((spec) => (
       <button
         key={spec._id}
-        className={`flex flex-col items-center px-8 py-4 rounded-xl border hover:shadow transition ${
-          selected === spec._id
+        className={`flex flex-col items-center px-8 py-4 rounded-xl border hover:shadow transition ${selected === spec._id
             ? "border-pink-500 bg-pink-50"
             : "border-gray-200 bg-white"
-        }`}
+          }`}
         onClick={() => onSelect(spec._id)}
       >
         <img src={spec.icon} alt={spec.name} className="w-10 h-10 mb-2" />
@@ -135,7 +134,7 @@ const DoctorCard = ({ doctor, onImageClick }) => (
     </div>
 
     <Link
-      href={`/appointments?doctorId=${doctor._id}`}
+      href={`/appointments/new?doctorId=${doctor._id}`}
       className="bg-[#EC7FA9] hover:bg-pink-500 text-white px-6 py-4 rounded-[8px] text-base font-bold"
     >
       Book Appointment
