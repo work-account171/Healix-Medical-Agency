@@ -122,7 +122,7 @@ export default function SignupPage() {
                 className="w-full px-4 py-2 border rounded"
               >
                 <option value="">Select a specialization</option>
-                {specializations.map((spec) => <option value={spec._id}>{spec.name}</option>)}
+                {specializations.map((spec) => <option key={spec.name} value={spec._id}>{spec.name}</option>)}
               </select>
               <input
                 name="experienceYears"
