@@ -3,6 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyJwt } from "@/lib/jwt";
+import Doctor from "@/models/Doctor";
 
 export async function GET() {
     try {
